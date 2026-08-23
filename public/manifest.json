@@ -1,0 +1,42 @@
+{
+  "name": "CleanPro Client PWA",
+  "short_name": "CleanPro",
+  "description": "Book & Track Professional Cleaning Services in Real-Time",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0284c7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "utilities", "business"],
+  "shortcuts": [
+    {
+      "name": "Book Cleaning",
+      "short_name": "Book",
+      "description": "Book a new cleaning appointment",
+      "url": "/?action=book",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Orders",
+      "short_name": "Orders",
+      "description": "Track active and past cleaning orders",
+      "url": "/?tab=orders",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    }
+  ]
+}

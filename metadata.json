@@ -1,0 +1,6 @@
+{
+  "name": "CleanPro Client PWA",
+  "description": "Progressive Web App for booking professional cleaning services, tracking live order status, reviewing room inspection photos, checklists, and payments.",
+  "requestFramePermissions": ["camera", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

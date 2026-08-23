@@ -7,10 +7,8 @@ import {
   Lock,
   User,
   Phone,
-  ShieldCheck,
   Sparkles,
   ArrowRight,
-  UserCheck,
   Eye,
   EyeOff,
   CheckCircle2
@@ -72,7 +70,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           email: email.trim().toLowerCase(),
           password,
           fullName: fullName.trim(),
-          phone: phone.trim() || '+1 (555) 301-4492',
+          phone: phone.trim() || '',
           lgpdConsent,
           rememberMe,
           onboardingSource: 'auth_modal',
@@ -102,27 +100,11 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       try {
         await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase());
         setInfoMessage(`Password reset link has been dispatched to ${email}.`);
-      } catch (err) {
+      } catch {
         setInfoMessage(`Password reset link sent to ${email}. Check your inbox.`);
       }
     } else {
       setInfoMessage(`Password reset link sent to ${email}. Check your inbox.`);
-    }
-  };
-
-  const handleQuickDemoLogin = async (demoEmail: string, name: string) => {
-    setLoading(true);
-    setErrorMessage('');
-    try {
-      const user = await CleanProAPI.login(demoEmail, undefined, true);
-      user.full_name = name;
-      await CleanProAPI.updateUserProfile(user);
-      onSuccess(user);
-      onClose();
-    } catch (err: unknown) {
-      setErrorMessage(err instanceof Error ? err.message : 'Demo sign in failed');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -226,7 +208,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   id="auth-input-name"
                   type="text"
                   required
-                  placeholder="e.g. Sarah Jenkins"
+                  placeholder="e.g. John Doe"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-slate-900"
@@ -356,39 +338,6 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             )}
           </button>
         </form>
-
-        {/* Demo Fast Login Helpers */}
-        <div className="mt-4 pt-3.5 border-t border-slate-100">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-center mb-2">
-            Quick Client Presets
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              id="demo-login-sarah"
-              type="button"
-              onClick={() => handleQuickDemoLogin('sarah.jenkins@cleanpro-client.com', 'Sarah Jenkins')}
-              className="p-2 bg-slate-50 hover:bg-sky-50 hover:border-sky-200 border border-slate-200/80 rounded-xl text-left transition-colors flex items-center gap-2"
-            >
-              <UserCheck className="w-4 h-4 text-sky-600 shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-slate-800 truncate">Sarah Jenkins</p>
-                <p className="text-[10px] text-slate-500 truncate">Active Order #{'2026-8841'}</p>
-              </div>
-            </button>
-            <button
-              id="demo-login-marcus"
-              type="button"
-              onClick={() => handleQuickDemoLogin('marcus.vance@cleanpro-client.com', 'Marcus Vance')}
-              className="p-2 bg-slate-50 hover:bg-sky-50 hover:border-sky-200 border border-slate-200/80 rounded-xl text-left transition-colors flex items-center gap-2"
-            >
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-slate-800 truncate">Marcus Vance</p>
-                <p className="text-[10px] text-slate-500 truncate">Completed History</p>
-              </div>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

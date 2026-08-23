@@ -18,7 +18,6 @@ import {
   Star,
   ChevronRight,
   RefreshCw,
-  Play,
   Check,
   User,
   Headphones,
@@ -57,7 +56,6 @@ export function OrderTrackingView({
   const [activeModal, setActiveModal] = useState<
     'checklist' | 'photos' | 'signature' | 'payment' | 'rating' | null
   >(null);
-  const [simulating, setSimulating] = useState(false);
 
   // Real-time Postgres Changes Subscription
   useEffect(() => {
@@ -128,19 +126,6 @@ export function OrderTrackingView({
         return 4;
       default:
         return 0;
-    }
-  };
-
-  const handleAdvanceStatus = async () => {
-    if (!currentOrder) return;
-    setSimulating(true);
-    try {
-      const updated = await CleanProAPI.advanceOrderStatus(currentOrder.id);
-      if (updated) {
-        onOrderUpdated(updated);
-      }
-    } finally {
-      setSimulating(false);
     }
   };
 
@@ -311,19 +296,12 @@ export function OrderTrackingView({
                     </p>
                   </div>
 
-                  {/* Demo Simulator Action Pill */}
-                  {currentOrder.status !== 'completed' && (
-                    <button
-                      id="btn-simulate-advance-status"
-                      type="button"
-                      disabled={simulating}
-                      onClick={handleAdvanceStatus}
-                      className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
-                    >
-                      <Play className="w-3.5 h-3.5 fill-white" />
-                      <span>{simulating ? 'Updating...' : 'Advance Live Status (Demo)'}</span>
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-sky-200 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 flex items-center gap-1.5">
+                      <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                      <span>Live WebSocket Connected</span>
+                    </span>
+                  </div>
                 </div>
 
                 {/* Stepper Pipeline */}

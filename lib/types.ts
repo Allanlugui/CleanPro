@@ -1,12 +1,140 @@
+// ==============================================================================
+// CLEANING SERVICE COMPANY ECOSYSTEM - TYPES & SUPABASE SCHEMA DEFINITIONS
+// ==============================================================================
+
+// Database Row Types matching Supabase Schema exactly
+export interface ProfileRow {
+  id: string; // UUID primary key references auth.users(id)
+  full_type: 'admin' | 'operational' | 'client';
+  full_name: string;
+  email: string;
+  phone: string | null;
+  avatar_url: string | null;
+  company_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ServiceCategoryName =
+  | 'Residential'
+  | 'Commercial'
+  | 'Deep Cleaning'
+  | 'Post-Construction'
+  | 'Disinfection & Sanitization'
+  | 'Move-In/Move-Out'
+  | 'Carpet & Upholstery';
+
+export interface ServiceRow {
+  id: string; // UUID
+  title: string;
+  description: string | null;
+  base_price: number;
+  category: ServiceCategoryName;
+  duration_minutes: number;
+  is_active: boolean;
+  features: string[]; // JSONB
+  created_at: string;
+  updated_at: string;
+}
+
+export type ServiceOrderStatus =
+  | 'pending'
+  | 'assigned'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled';
+
+export interface ServiceOrderRow {
+  id: string; // UUID
+  client_id: string;
+  operational_id: string | null;
+  service_id: string;
+  status: ServiceOrderStatus;
+  scheduled_date: string; // TIMESTAMPTZ
+  total_price: number;
+  address: string;
+  unit_or_suite: string | null;
+  notes: string | null;
+  client_signature_url: string | null;
+  inspection_photos: string[];
+  checklist: RoomChecklistSection[]; // JSONB
+  created_at: string;
+  updated_at: string;
+}
+
+export type SupportTicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+export type SupportTicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface SupportTicketRow {
+  id: string; // UUID
+  client_id: string;
+  assigned_to: string | null;
+  service_order_id: string | null;
+  subject: string;
+  category: string;
+  status: SupportTicketStatus;
+  priority: SupportTicketPriority;
+  resolution_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChatMessageRow {
+  id: string; // UUID
+  ticket_id: string;
+  sender_id: string;
+  message: string;
+  attachments: string[];
+  is_internal_note: boolean;
+  created_at: string;
+}
+
+// Emergency & Telemetry
+export interface AudioSafetyLogRow {
+  id?: string;
+  service_order_id?: string;
+  recorded_by?: string;
+  audio_url?: string;
+  duration_seconds?: number;
+  ai_sentiment?: string;
+  flagged_alert?: boolean;
+  created_at?: string;
+}
+
+export interface EmergencyIncidentRow {
+  id?: string;
+  service_order_id?: string;
+  reported_by?: string;
+  incident_type: string;
+  description: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  resolved: boolean;
+  created_at?: string;
+}
+
+export interface TelemetryLogRow {
+  id?: string;
+  user_id?: string;
+  event_name: string;
+  metadata?: Record<string, unknown>;
+  ip_address?: string;
+  created_at?: string;
+}
+
+// ------------------------------------------------------------------------------
+// UI Presentation & State Models
+// ------------------------------------------------------------------------------
+
 export type ServiceStatus =
   | 'pending'
+  | 'assigned'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
   | 'confirmed'
   | 'team_assigned'
   | 'en_route'
-  | 'in_progress'
-  | 'inspecting'
-  | 'completed'
-  | 'cancelled';
+  | 'inspecting';
 
 export type PaymentStatus = 'unpaid' | 'pending_verification' | 'paid' | 'refunded';
 export type PaymentMethod = 'pix' | 'credit_card' | 'invoice';
@@ -140,6 +268,7 @@ export interface ServiceOrder {
   client_name: string;
   client_email: string;
   client_phone: string;
+  operational_id?: string | null;
   service_id: string;
   service_name: string;
   category_name: string;
@@ -155,6 +284,7 @@ export interface ServiceOrder {
   checklist: RoomChecklistSection[];
   inspection_photos: InspectionPhoto[];
   client_signature?: SignatureRecord;
+  client_signature_url?: string;
   payment_status: PaymentStatus;
   payment_details: PaymentDetails;
   rating?: OrderRating;
@@ -166,16 +296,20 @@ export interface ServiceOrder {
 export interface CleaningService {
   id: string;
   category_id: string;
+  category: ServiceCategoryName;
   name: string;
+  title?: string;
   slug: string;
   short_desc: string;
   description: string;
   base_price: number;
+  duration_minutes?: number;
   estimated_hours: string;
   popular_badge?: string;
   icon: string;
   image_url: string;
   features: string[];
+  is_active?: boolean;
   included_tasks: {
     room: string;
     tasks: string[];
@@ -185,7 +319,7 @@ export interface CleaningService {
 
 export interface ServiceCategory {
   id: string;
-  name: string;
+  name: ServiceCategoryName | string;
   slug: string;
   description: string;
   icon: string;
@@ -198,8 +332,9 @@ export interface UserProfile {
   full_name: string;
   phone: string;
   avatar_url?: string;
-  role: 'client' | 'customer' | 'admin' | 'dispatcher' | 'cleaner';
-  full_type?: 'client' | 'admin' | 'dispatcher' | 'cleaner';
+  role: 'client' | 'operational' | 'admin' | 'dispatcher' | 'cleaner' | 'customer';
+  full_type: 'admin' | 'operational' | 'client';
+  company_name?: string;
   default_address?: AddressDetails;
   lgpd_consent: boolean;
   onboarding_source?: string;
@@ -208,22 +343,30 @@ export interface UserProfile {
 
 export interface SupportMessage {
   id: string;
+  ticket_id?: string;
+  sender_id?: string;
   sender_type: 'client' | 'agent' | 'system';
   sender_name: string;
   content: string;
   timestamp: string;
   attachment_url?: string;
+  attachments?: string[];
+  is_internal_note?: boolean;
 }
 
 export interface SupportTicket {
   id: string;
   order_id?: string;
+  service_order_id?: string | null;
   client_id: string;
   client_name: string;
+  assigned_to?: string | null;
   subject: string;
+  category?: string;
   department: 'sac' | 'ombudsman' | 'billing' | 'emergency';
-  status: 'open' | 'in_progress' | 'resolved';
-  priority: 'normal' | 'high' | 'urgent';
+  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high' | 'urgent' | 'normal';
+  resolution_notes?: string | null;
   messages: SupportMessage[];
   created_at: string;
 }
